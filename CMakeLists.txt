@@ -38,7 +38,7 @@ function(my_pico_btstack_make_gatt_header TARGET_LIB TARGET_TYPE GATT_FILE)
 endfunction()
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/lib/ring_buffer_lib)
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/lib/pico-w-ble-midi-service)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/lib/pico-w-ble-midi-lib)
 add_executable(${target_name}
     ble-midi2usbhost.c
     )
@@ -57,7 +57,7 @@ target_include_directories(${target_name} PRIVATE
 pico_enable_stdio_uart(${target_name} 1)
 target_link_options(${target_name} PRIVATE -Xlinker --print-memory-usage)
 target_compile_options(${target_name} PRIVATE -Wall -Wextra)
-my_pico_btstack_make_gatt_header(${target_name} PRIVATE "${CMAKE_CURRENT_LIST_DIR}/ble-midi2usbhost.gatt" "-I${CMAKE_CURRENT_LIST_DIR}/lib/pico-w-ble-midi-service")
+my_pico_btstack_make_gatt_header(${target_name} PRIVATE "${CMAKE_CURRENT_LIST_DIR}/ble-midi2usbhost.gatt" "-I${CMAKE_CURRENT_LIST_DIR}/lib/pico-w-ble-midi-lib")
 
 pico_add_extra_outputs(${target_name})
 

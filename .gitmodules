@@ -1,6 +1,6 @@
-[submodule "lib/pico-w-ble-midi-service"]
-	path = lib/pico-w-ble-midi-service
-	url = https://github.com/rppicomidi/pico-w-ble-midi-service.git
 [submodule "lib/ring_buffer_lib"]
 	path = lib/ring_buffer_lib
 	url = https://github.com/rppicomidi/ring_buffer_lib
+[submodule "lib/pico-w-ble-midi-lib"]
+	path = lib/pico-w-ble-midi-lib
+	url = https://github.com/rppicomidi/pico-w-ble-midi-lib.git
