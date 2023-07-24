@@ -238,9 +238,9 @@ int main()
     sm_init();
 
     att_server_init(profile_data, NULL, NULL);
-    // just works, legacy pairing
+    // just works, legacy pairing, with bonding
     sm_set_io_capabilities(IO_CAPABILITY_NO_INPUT_NO_OUTPUT);
-    sm_set_authentication_requirements(0);
+    sm_set_authentication_requirements(SM_AUTHREQ_SECURE_CONNECTION | SM_AUTHREQ_BONDING);
     // register for SM events
     sm_event_callback_registration.callback = &packet_handler;
     sm_add_event_handler(&sm_event_callback_registration);
@@ -257,18 +257,22 @@ int main()
             uint8_t mes[3];
             uint8_t nread = midi_service_stream_read(con_handle, sizeof(mes), mes, &timestamp);
             if (nread != 0) {
-                //printf("ts:%u  MIDI:", timestamp);
-                //printf_hexdump(mes, nread);
-                // TODO manage timestamps
+                // Ignore timestamps for now. Handling timestamps has a few issues:
+                // 1. Some applications (e.g., TouchDAW 2.3.1 for Android or Midi Wrench on an iPad)
+                //    always send timestamp value of 0.
+                // 2. Synchronizing the timestamps to the system clock has issues if there are
+                //    lost or out of order packets.
                 uint32_t nwritten = tuh_midi_stream_write(midi_dev_addr, 0, mes, nread);
                 if (nwritten != nread) {
                     TU_LOG1("Warning: Dropped %lu bytes receiving from UART MIDI In\r\n", nread - nwritten);
                 }
+            if (usb_connected)
+                tuh_midi_stream_flush(midi_dev_addr);
             }
         }
         poll_usb_rx(usb_connected);
     }
-    return 0;
+    return 0; // never gets here
 }
 
 //--------------------------------------------------------------------+

@@ -10,15 +10,16 @@
 #define ENABLE_LOG_INFO
 #define ENABLE_LOG_ERROR
 #define ENABLE_PRINTF_HEXDUMP
+#define ENABLE_LE_SECURE_CONNECTIONS
 // should be helpful for throughput for long sysex messages
 // #define ENABLE_LE_DATA_LENGTH_EXTENSION
 
 // For the BLE-MIDI server
 #define BLE_MIDI_SERVER_MAX_CONNECTIONS 1
-// uncomment to remove the MIDI clock real-time message from server to client
-// #define BLE_MIDI_SERVER_FILTER_MIDI_CLOCK_TO_BLE
-// uncomment to remove the Active Sensing real-time message from server to client
-// #define BLE_MIDI_SERVER_FILTER_ACTIVE_SENSING_TO_BLE
+// comment out to enable the MIDI clock real-time message from server to client
+#define BLE_MIDI_SERVER_FILTER_MIDI_CLOCK_TO_BLE
+// comment out to enable the Active Sensing real-time message from server to client
+#define BLE_MIDI_SERVER_FILTER_ACTIVE_SENSING_TO_BLE
 
 // for the client
 #if RUNNING_AS_CLIENT
