@@ -17,50 +17,66 @@ build before you connect your expensive MIDI device to this project. Also be awa
 the only current limiting or short circuit protection this project provides for its
 USB host port comes from the external 5V power source.
 
-If you have problems or need, please file issues in the Issues tab on the project
+If you have problems or need help, please file issues in the Issues tab on the project
 [home page](https://github.com/rppicomidi/ble-midi2usbhost). If you have specific
-Bluetooth issues and can attach a packet capture trace, that can help a lot. If
+Bluetooth issues and can attach an air trace, that can help a lot. If
 you find a bug and have a fix for it, pull requests are welcome.
 
-# Known issues
-## 24-Jul-2023:
-If the Pico W pairs, then disconnects, with a phone or an iPad app,
-then often you either have to shut the Pico W down completely for a few
-seconds until the app realizes the Pico W is gone, or you have to
-turn Bluetooth off on the Phone or iPad a while, before reconnection
-is possible.
+# Known Issues
+## 26-Jul-2023:
+### iPad GarageBand
+The iPad GarageBand app Advanced Settings shows the ble-midi2usbhost Pico W Bluetooth successfully connected, but MIDI data does not play GarageBand virtual instruments.
 
-Sending the Active Sensing and the MIDI Clock message from the Pico W
-to a remote device over Bluetooth is disabled. Either my code is not
-always sending these messages correctly, there is some problem with
-my ring buffer library corrupting the buffers, or the apps
-I am using get overloaded with data, but it is too easy to get stuck
-notes when these messages are enabled. Also, Active Sensing is sort
-of a waste for USB and Bluetooth as there are other disconnection
-detection mechanisms available. It would make more sense to support
-active sensing locally over USB to help the USB keyboard detect
-loss of Bluetooth connection. See the file `btstack_config.h` to
-try enabling them if you need them.
+- Workaround: Use a different iPad BLE-MIDI app like MIDI Wrench or
+Synth One to connect to the ble-midi2usbhost Pico W Bluetooth first.
+After that, GarageBand virtual instruments will recognize BLE-MIDI messages.
 
-Sometimes, with a USB MIDI keyboard playing a synthesizer app via
-Bluetooth, if you play fast and use the pitch bend wheel and mod
-wheel, notes will get stuck on in the synthesizer app. I am not
-sure why.
+In my mind, this is an issue with the GarageBand App. GarageBand on my
+Mac Mini running Monterey works fine. So too do all other BLE-MIDI apps I
+have tested on my iPad. If this is wrong, please file an issue in this
+project.
 
-On an iPad, using GarageBand Advanced Settings to connect to Bluetooth
-will show an active Bluetooth connection but notes played on the
-keyboard won't sound. However, if you start some other app such
-as MIDI Wrench or AudioKit Synth One, play a note or two, exit
-those apps and restart GarageBand, then notes play correctly in
-GarageBand.
+### iPad Bluetooth Disconnect Does Not Fully Disconnect
+If the Pico W pairs, then disconnects, with an iPad app, you have
+to fully exit the app and wait a few seconds before you can connect
+again, or you have to shut off iPad Bluetooth for about a second,
+then turn it on. It seems the iPad only disconnects from the GATT
+layer but does not fully disconnect from the Pico W Bluetooth.
 
-Some more detailed testing results are in this document.
+By contrast, on my Mac Mini running Monterey, disconnect fully
+disconnects, so reconnecting is reliable.
+
+### Android Bluetooth Reconnection unreliable
+If the Pico W Bluetooth pairs, then disconnects, from the Android App
+TouchDAW, reconnection does not work correctly. Sometimes you have
+to reboot the phone to get it to connect again. I am not sure if the
+issue is with ble-midi2usbhost, my cheap phone, TouchDAW, or some
+combination of these.
+
+### Active Sensing is Disabled
+If the MIDI keyboard or other device connected via the ble-midi2usbhost
+USB Host port sends the Active Sensing message, ble-midi2usbhost
+filters it out. This is done on purpose. In the future, Active Sensing
+will be supported locally. We don't need to waste Bluetooth bandwidth
+on this message.
+
+### Can't Pair with Linux
+Most Linux distributions use the BlueZ Bluetooth stack. By default,
+BLE-MIDI is disabled. Enabling requires rebuilding the BlueZ stack
+with the `--enable-midi` option. You can find old instructions for
+doing this on the Internet. I have not tried this.
+
+### Can't Pair with Windows
+I believe BLE-MIDI is not supported in Windows unless the device has its own
+device driver installed or you are using software like Cubase that supports
+WinRT MIDI. I have not tried this.
 
 # Hardware
 
 ![](ble-midi2usbhost.jpg)
 
-The photo shows a Pico W with a microUSB to USB A adapter connected to an Arturia Keylab Essential 88 USB MIDI keyboard and wired to a USB C breakout board
+The photo shows a Pico W with a microUSB to USB A adapter connected to an Arturia Keylab Essential 88 USB MIDI keyboard. The Pico W is also wired to a USB C 
+breakout board connected to a USB C to USB A cable that is
 connected to a 5000mAh phone charger battery. The keyboard is bus powered, so
 the system draws enough power to prevent the phone charger battery from shutting
 down automatically. An iPad running AudioKit Synth One is connected to the Pico W
@@ -103,6 +119,35 @@ git clone https://github.com/rppicomidi/ble-midi2usbhost.git
 cd ble-midi2usbhost
 git submodule update --recursive --init
 mkdir build
+```
+When you are done with these steps, your source tree should look like this
+(library directories, but not files, are shown for brevity).
+```
+ble-midi2usbhost/
+    |
+    +--lib
+    |   |
+    |   +--pico-w-ble-midi-lib/
+    |   |
+    |   +--ring-buffer-lib/
+    |
+    +--ble-midi2usbhost.c
+    |
+    +--ble-midi2usbhost.gatt
+    |
+    +--ble-midi2usbhost.jpg
+    |
+    +--btstack_config.h
+    |
+    +--CMakeLists.txt
+    |
+    +--LICENSE
+    |
+    +--pico_sdk_import.cmake
+    |
+    +--README.md
+    |
+    +--tusb_config.h
 ```
 ## Installing a tinyusb library that supports USB MIDI Host
 The Pico SDK uses the main repository for `tinyusb` as a git submodule. Until the USB Host driver for MIDI is
@@ -155,20 +200,22 @@ may use the `picoprobe` to flash code.
 
 ## Using VisualStudio Code and a picoprobe
 This is the workflow I normally use. This project already contains a .vscode directory that should work fine for you.
-1. Start visual studio code in a way that imports the environment variables. From
+1. Set up the environment variables and an instance of openocd as described
+in the [Getting started with Raspberry Pi Pico](https://datasheets.raspberrypi.com/pico/getting-started-with-pico.pdf) document.
+2. Start visual studio code in a way that imports the environment variables. From
 the command line, after you set up the environment, type
 ```
 code
 ```
-2. Click `File->Open Folder...` and then select the folder where you installed
+3. Click `File->Open Folder...` and then select the folder where you installed
 this project.
-3. Choose the tool chain and build as described in Chapter 7 of the
+4. Choose the tool chain and build as described in Chapter 7 of the
 [Getting started with Raspberry Pi Pico](https://datasheets.raspberrypi.com/pico/getting-started-with-pico.pdf) document. Then load the code by running it as
 described in the same chapter.
 
-# About the Pairing model
+# Tweaking the Pairing Model
 This project as written uses "Just Works" pairing with bonding for maximum
-compatibility. If you want to add more authentication features, I put the hooks
+ease of use. If you want to add more authentication features, I put the hooks
 in the SM callback handler, but you will need to add more hardware for a display
 (`IO_CAPABILITY_DISPLAY_ONLY`), a display and yes/no buttons (`IO_CAPABILITY_DISPLAY_YES_NO`),
 or a keyboard (`IO_CAPABILITY_KEYBOARD_ONLY`). If you want to add
@@ -179,49 +226,20 @@ to the USB Host port of the ble-midi2usbhost hardware during pairing. Then
 you would unplug the HID keyboard and plug in your MIDI device during
 normal operation.
 
-# Testing 23-Jul-2023
-The ble-midi2usbhost code will cause the Pico W Bluetooth to advertise itself
-as BLE-MIDI2USBH with a BLE-MIDI service UUID. It uses just works pairing. For
-my testing, I used a Yamaha RefaceCS keyboard connected to the USB Host
-port. I used software on the BLE-MIDI client to connect to the BLE-MIDI server
-on the Pico W. Clients I used were MacOS (Monterey on a 2014 Mac Mini),
-iPadOS 16.5.1(c) (on 7th generation iPad), and the WIDI BUD plugged into
-a Windows 10 PC running Cubase 10.
+If you want to disable legacy pairing in the name of more security, add the line
+```
+sm_set_secure_connections_only_mode(true);
+```
+before any other `sm_` function calls.
 
-## Pairing and re-connecting
-No operating system I tried seemed to support pairing without use of
-some sort of app. I found initial pairing works fine, but reconnection
-is not reliable and usually requires some combination of power cycling
-the ble-midi2usbhost hardware, restarting the app on the client device,
-rebooting the client device, or some combination of these.
-
-## Testing Keyboard->USB->BLE-MIDI->Client Syntheiszer
-I then tried to play music on a synthesizer program that is running
-on the BLE-MIDI client by pressing keys on the RefaceCS keyboard. Results varied.
-
-### MacOS (Monterey on a 2014 Mac Mini)
-I used the Audio MIDI Setup app to discover and connect the Pico W. I used GarageBand piano as the synthesizer. It worked as expected.
-
-### iPadOS 16.5.1(c) (on 7th generation iPad)
-Using the Bluetooth MIDI option in the Advanced settings of GarageBand could connect to the Pico W but music would not play. However, if I used the MIDI Wrench app to connect to the Pico W and then started the GarageBand App, it works, but not reliably. If you play fast, or use
-the pitch bender, notes get stuck and things get unreliable.
-
-AudioKit Synth One seemed to work fine most of the time but occasionally I was
-getting stuck notes.
-
-### WIDI BUD (on Windows 10 PC)
-I plugged in the WIDI BUD. It discovered and connected to the Pico W. I started
-Cubase and set up a project to trigger the HALion module from the WIDI BUD. It
-worked well.
-
-## Testing Client MIDI playback->BLE-MIDI->Keyboard's sound generator
-### iPadOS 16.5.1(c) (on 7th generation iPad)
-The keyboards on GarageBand and AudioKit Synth One do not seem to transmit MIDI.
-However, the MIDI Wrench App keyboard seems to work correctly.
-
-### TouchDAW 2.3.1 (on Android 13 Phone)
-The keyboard app in TouchDAW 2.3.1 seems to work correctly as long as the connection
-is good. However, I found myself doing a lot of rebooting hardware if connection is
-lost. It is a good idea to exit the app using the Shutdown setting and then close
-the app using the correct Android gesture. It is also a good idea to use the keep
-device awake setting.
+If you want to use a packet sniffer to get an air trace of the BLE-MIDI stream,
+it is simpler if you use legacy pairing. To do that, in `ble-midi2usbhost.c`,
+change the line
+```
+sm_set_authentication_requirements(SM_AUTHREQ_SECURE_CONNECTION | SM_AUTHREQ_BONDING);
+```
+to
+```
+sm_set_authentication_requirements(SM_AUTHREQ_BONDING);
+```
+.
