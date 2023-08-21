@@ -39,6 +39,8 @@ endfunction()
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/lib/ring_buffer_lib)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/lib/pico-w-ble-midi-lib)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/lib/usb_midi_host)
+
 add_executable(${target_name}
     ble-midi2usbhost.c
     )
@@ -50,6 +52,7 @@ target_link_libraries(${target_name}
     ring_buffer_lib
     tinyusb_host
     tinyusb_board
+    usb_midi_host_app_driver
     )
 target_include_directories(${target_name} PRIVATE
     ${CMAKE_CURRENT_LIST_DIR} # For btstack config, etc.

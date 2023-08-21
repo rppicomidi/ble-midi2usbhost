@@ -78,9 +78,9 @@
 #include "pico/btstack_cyw43.h"
 #include "ble-midi2usbhost.h"
 #define _TUSB_HID_H_ // prevent tinyusb HID namespace conflicts with btstack
-#include "bsp/board.h"
+#include "bsp/board_api.h"
 #include "tusb.h"
-#include "class/midi/midi_host.h"
+#include "usb_midi_host.h"
 // This is Bluetooth LE only
 #define APP_AD_FLAGS 0x06
 const uint8_t adv_data[] = {
@@ -100,16 +100,6 @@ const uint8_t scan_resp_data_len = sizeof(scan_resp_data);
 static hci_con_handle_t con_handle = HCI_CON_HANDLE_INVALID;
 
 static uint8_t midi_dev_addr = 0;
-
-static void poll_usb_rx(bool connected)
-{
-    // device must be attached and have at least one endpoint ready to receive a message
-    if (!connected || tuh_midih_get_num_rx_cables(midi_dev_addr) < 1)
-    {
-        return;
-    }
-    tuh_midi_read_poll(midi_dev_addr);
-}
 
 static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size) {
     UNUSED(size);
@@ -309,7 +299,6 @@ int main()
                 tuh_midi_stream_flush(midi_dev_addr);
             }
         }
-        poll_usb_rx(usb_connected);
     }
     return 0; // never gets here
 }
@@ -359,7 +348,7 @@ void tuh_midi_rx_cb(uint8_t dev_addr, uint32_t num_packets)
                     return; // done
                 if (cable_num == 0) {
                     if (con_handle == HCI_CON_HANDLE_INVALID) {
-                        TU_LOG1("ble-midi2usbhost: No BLE-MIDI connection: Dropped %lu bytes sending to BLE-MIDI\r\n", bytes_read - npushed);
+                        TU_LOG1("ble-midi2usbhost: No BLE-MIDI connection: Dropped %lu bytes sending to BLE-MIDI\r\n", bytes_read);
                         return;
                     }
                     uint8_t npushed = midi_service_stream_write(con_handle, bytes_read, buffer);

@@ -110,8 +110,8 @@ and are not endorsements.
 
 # Software
 The following instructions assume that your Pico SDK code is stored in
-`${PICO_SDK_PATH}` and that your project source tree will be in `${PICO_PROJ}/ble-midi2usbhost`. As of this writing, you will need to install a forked version
-of the `tinyusb` library (See below).
+`${PICO_SDK_PATH}` and that your project source tree will be in `${PICO_PROJ}/ble-midi2usbhost`. You will likely need to update your version of the TinyUSB
+library that ships with the Pico SDK. See below.
 ## Getting the project source code
 ```
 cd ${PICO_PROJ}
@@ -130,6 +130,8 @@ ble-midi2usbhost/
     |   +--pico-w-ble-midi-lib/
     |   |
     |   +--ring-buffer-lib/
+    |   |
+    |   +--usb_midi_host
     |
     +--ble-midi2usbhost.c
     |
@@ -149,32 +151,20 @@ ble-midi2usbhost/
     |
     +--tusb_config.h
 ```
-## Installing a tinyusb library that supports USB MIDI Host
-The Pico SDK uses the main repository for `tinyusb` as a git submodule. Until the USB Host driver for MIDI is
-incorporated in the main repository for `tinyusb`, you will need to use the latest development version in pull
-request 1627 forked version. To make matters worse, this pull request is getting old and it is rapidly
-diverging from the mainline of tinyusb, so I have been updating this pull request in my local workspace. I
-have pushed my changes up to my own fork of `tinyusb` that I keep in a branch called `pr-midihost`. Sorry. I know. Yuk.
+## Installing a tinyusb library that supports the usb_midi_host application library
+The Pico SDK uses the main repository for `tinyusb` as a git submodule. Pico 
+SDK 1.5.1 configured to use version 0.15.0 of TinyUSB. That version does not
+support application host drivers. You need a version of TinyUSB from 15-Aug-2023
+or later. To make sure you have that, follow these instructions
 
 1. If you have not already done so, follow the instructions for installing the Raspberry Pi Pico SDK in Chapter 2 of the
 [Getting started with Raspberry Pi Pico](https://datasheets.raspberrypi.com/pico/getting-started-with-pico.pdf)
-document. In particular, make sure `PICO_SDK_PATH` is set to the directory where you installed the pico-sdk.
+document. In particular, make sure `PICO_SDK_PATH` is set to the directory where you installed the pico-sdk and you have installed all of the git submodules.
 2. Set the working directory to the tinyusb library
 ```
 cd ${PICO_SDK_PATH}/lib/tinyusb
 ```
-3. Create a git remote to point to my fork of tinyusb and get my updated branch of Pull Request 1627, which is called pr-midihost (short for pull-request-midihost)
-```
-git remote add rppicomidi https://github.com/rppicomidi/tinyusb.git
-git fetch rppicomidi
-```
-4. Checkout the appropriate branch of my forked code
-```
-git checkout -b pr-midihost rppicomidi/pr-midihost
-```
-5. In case you ever need to get back to the official tinyusb code for some other
-project, just check out the master branch and pull the latest code. Don't do this
-for this this project.
+3. Check out the master branch and pull the latest code.
 ```
 git checkout master
 git pull
