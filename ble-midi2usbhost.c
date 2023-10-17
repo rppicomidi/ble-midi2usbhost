@@ -293,7 +293,7 @@ int main()
                 //    lost or out of order packets.
                 uint32_t nwritten = tuh_midi_stream_write(midi_dev_addr, 0, mes, nread);
                 if (nwritten != nread) {
-                    TU_LOG1("Warning: Dropped %lu bytes receiving from UART MIDI In\r\n", nread - nwritten);
+                    TU_LOG1("Warning: Dropped %lu bytes receiving from Bluetooth MIDI In\r\n", nread - nwritten);
                 }
             if (usb_connected)
                 tuh_midi_stream_flush(midi_dev_addr);
