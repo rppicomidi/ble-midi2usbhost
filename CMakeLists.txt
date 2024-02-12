@@ -11,7 +11,7 @@ pico_sdk_init()
 # Pass the target library name library type and path to the GATT input file
 # To add additional directories to the gatt #import path, one "-I[custom_path]"
 # argument for each custom_path to the end of the argument list.
-# TODO if pull request #1445 to the pico-sdk project is approved, then
+# TODO if pull request #1445 to the pico-sdk project is released, then
 # remove this function and use pico_btstack_make_gatt_header() instead
 function(my_pico_btstack_make_gatt_header TARGET_LIB TARGET_TYPE GATT_FILE)
         find_package (Python3 REQUIRED COMPONENTS Interpreter)
