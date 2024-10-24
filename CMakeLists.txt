@@ -16,7 +16,7 @@ add_executable(${target_name}
     )
 target_link_libraries(${target_name}
     pico_stdlib
-    ble_midi_service_lib
+    ble_midi_server_lib
     pico_btstack_cyw43
     pico_cyw43_arch_none
     ring_buffer_lib
