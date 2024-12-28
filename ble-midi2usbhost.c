@@ -188,10 +188,12 @@ void tuh_midi_rx_cb(uint8_t dev_addr, uint32_t num_packets)
                         TU_LOG1("ble-midi2usbhost: No BLE-MIDI connection: Dropped %lu bytes sending to BLE-MIDI\r\n", bytes_read);
                         return;
                     }
+                    async_context_acquire_lock_blocking(cyw43_arch_async_context());
                     uint8_t npushed = ble_midi_server_stream_write(bytes_read, buffer);
                     if (npushed != bytes_read) {
                         TU_LOG1("ble-midi2usbhost: Warning: Dropped %lu bytes sending to BLE-MIDI\r\n", bytes_read - npushed);
                     }
+                    async_context_release_lock(cyw43_arch_async_context());
                 }
             }
         }
