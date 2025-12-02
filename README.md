@@ -1,8 +1,8 @@
 # ble-midi2usbhost
-A Pico W Bluetooth LE MIDI to USB Host adapter for any class compliant USB MIDI device
+A Pico W/Pico2 W Bluetooth LE MIDI to USB Host adapter for any class compliant USB MIDI device
 
-This project uses the native Raspberry Pi Pico W USB port as a USB MIDI host port
-and it uses the Bluetooth LE capability of the Pico W's CYW43 WiFi/Bluetooth module
+This project uses the native Raspberry Pi Pico W or Pico2 W USB port as a USB MIDI host port
+and it uses the Bluetooth LE capability of the board's CYW43 WiFi/Bluetooth module
 to create a Bluetooth LE MIDI GATT Server. You can power the Raspberry Pi Pico W
 board with any 5V USB C power supply. If you choose to use a 5V phone charger
 battery pack, make sure that the attached USB MIDI device is bus powered and
@@ -21,6 +21,9 @@ If you have problems or need help, please file issues in the Issues tab on the p
 [home page](https://github.com/rppicomidi/ble-midi2usbhost). If you have specific
 Bluetooth issues and can attach an air trace, that can help a lot. If
 you find a bug and have a fix for it, pull requests are welcome.
+
+This project has been tested with Pico SDK 2.2.0 and TinyUSB 0.18.0. It has been
+tested with a Pico W board and a Pico2 W board.
 
 # Known Issues
 ## 26-Jul-2023:
@@ -61,8 +64,11 @@ will be supported locally. We don't need to waste Bluetooth bandwidth
 on this message.
 
 ### Can't Pair with Linux
+I have successfully used Linux Mint 22.1 and `bluetoothctl` to pair
+my Pico2 W board with my computer. Your mileage may vary.
+
 Most Linux distributions use the BlueZ Bluetooth stack. By default,
-BLE-MIDI is disabled. Enabling requires rebuilding the BlueZ stack
+in 2023, BLE-MIDI is disabled. Enabling requires rebuilding the BlueZ stack
 with the `--enable-midi` option. You can find old instructions for
 doing this on the Internet. I have not tried this.
 
@@ -92,10 +98,10 @@ and are not endorsements.
 4. Wire and solder
 5. 5V USB C power supply (e.g., a battery or AC cell phone charger) and USB C charging cable
 6. 3-pin 0.1" spacing square pin header for connecting the picoprobe debug pins and ground (optional)
-7. 2-pin 0.1" spacing square pin header for connecting the picoprobe ground pins (optional)
+7. 2-pin 0.1" spacing square pin header for connecting the picoprobe UART pins (optional)
 8. A Pico board board programmed as a picoprobe and populated with headers for wiring to the Pico W board (optional)
 9. 5 Jumper wires for connecting the picoprobe to the Pico W (optional)
-10. A microUSB cable to connect the picoprobe to your debug host computer
+10. A microUSB cable to connect the picoprobe to your debug host computer (optional)
 
 ## Wiring
 1. Solder a wire between pin 40 (VBUS pin) of the Pico W and the VBUS pin of the USB C breakout board
@@ -111,8 +117,8 @@ and are not endorsements.
 # Software
 The following instructions assume that your Pico SDK code is stored in
 `${PICO_SDK_PATH}` and that your project source tree will be in `${PICO_PROJ}/ble-midi2usbhost`.
-You will likely need to update your version of the TinyUSB
-library that ships with the Pico SDK. See below.
+If you are using Pico-SDK before version 2.2.0, you will need to update your
+version of the TinyUSB library that ships with the Pico SDK. See below.
 ## Getting the project source code
 ```
 cd ${PICO_PROJ}
@@ -165,10 +171,11 @@ document. In particular, make sure `PICO_SDK_PATH` is set to the directory where
 ```
 cd ${PICO_SDK_PATH}/lib/tinyusb
 ```
-3. Check out the master branch and pull the latest code.
+3. Check out the master branch and make sure you are using version 0.18.0
 ```
 git checkout master
 git pull
+git checkout 0.18.0
 ```
 ## Build the Project
 Make sure you have defined the following environment variables before either of these steps
@@ -176,6 +183,7 @@ Make sure you have defined the following environment variables before either of 
 export PICO_SDK_PATH=[insert the path to your Pico SDK here]
 export PICO_BOARD=pico_w
 ```
+If you are using a Pico2 W board, replace `pico_w` with `pico2_w`.
 
 To build from the command line, type these commands
 ```
@@ -189,10 +197,12 @@ The build generates the file `${PICO_PROJ}/ble-midi2usbhost/build/ble-midi2usbho
 the Pico W as a USB Mass Storage device and dragging the file to it, or you
 may use the `picoprobe` to flash code.
 
-## Using VisualStudio Code and a picoprobe
+## Using VisualStudio Code and a picoprobe (with a pre-version 2.0.0-type VS Code plugins)
 This is the workflow I normally use. This project already contains a .vscode directory that should work fine for you.
+I started developing using the [older version of Getting started with Raspberry Pi Pico](https://archive.org/details/getting_started_with_pico/page/1/mode/2up),
+and I have not changed my system much. If you use Pico SDK version 2.0.0-type VS Code plugins, skip this section.
 1. Set up the environment variables and an instance of openocd as described
-in the [Getting started with Raspberry Pi Pico](https://datasheets.raspberrypi.com/pico/getting-started-with-pico.pdf) document.
+in the [older version of Getting started with Raspberry Pi Pico](https://archive.org/details/getting_started_with_pico/page/1/mode/2up), document.
 2. Start visual studio code in a way that imports the environment variables. From
 the command line, after you set up the environment, type
 ```
@@ -200,9 +210,65 @@ code
 ```
 3. Click `File->Open Folder...` and then select the folder where you installed
 this project.
-4. Choose the tool chain and build as described in Chapter 7 of the
-[Getting started with Raspberry Pi Pico](https://datasheets.raspberrypi.com/pico/getting-started-with-pico.pdf) document. Then load the code by running it as
+4. Choose the tool chain and build as described in Chapter 6 of the old version of
+[Getting started with Raspberry Pi Pico](https://archive.org/details/getting_started_with_pico/page/1/mode/2up) document. Then load the code by running it as
 described in the same chapter.
+
+## Using VisualStudio Code and a debugprobe (with the official Pico SDK VS Code plugin)
+1. Import the project
+2. Choose the board type to match your Pico W or Pico2 W board
+3. Build the project
+4. Debug the project
+See [Getting started with Raspberry Pi Pico-series](https://pip-assets.raspberrypi.com/categories/610-raspberry-pi-pico/documents/RP-008276-DS-1-getting-started-with-pico.pdf?disposition=inline)
+
+# Using the software
+If you have many active Bluetooth MIDI devices in your area, it may be helpful to know the Bluetooth address of you Pico W or Pico2 W board.
+When the software starts up, the serial terminal connected to UART 0 (Pico W/Pico2 W board pins 1 and 2) will display the Bluetooth
+address of your board. The serial port terminal will look something like this:
+```
+Pico W BLE-MIDI to USB Host Adapter
+Version: 7.95.61 (abcd531 CY) CRC: 4528a809 Date: Wed 2023-01-11 10:29:38 PST Ucode Ver: 1043.2169 FWID 01-7afb0879
+cyw43 loaded ok, mac [Your device's MAC address]
+BT FW download, version = CYW4343A2_001.003.016.0031.0000_Generic_SDIO_37MHz_wlbga_BU_dl_signed
+BTstack up and running on [Your device's Bluetooth address]
+```
+
+## Testing using an iPad
+I have tested this using an iPad running the Midi Wrench app. To pair with the iPad, plug in the Pico W board to a power source.
+The Pico W will advertise itself as a MIDI device and its Bluetooth address will show up during discovery.
+Select it to pair. Once it is paired, it will show up on the device list as "BLE-MIDI2USBHUB". You can then use
+MIDI Wrench as an agent to work with Garage Band and other programs. The AudioKit Synth One app Bluetooth button will also allow you to discover and pair your iPad with the Pico board.
+
+
+## Testing using Linux
+You can also from Linux use the `bluetoothctl` command to discover the device.
+```
+$ bluetoothctl
+[bluetooth]# scan.uuids 03B80E5A-EDE8-4B33-A751-6CE34EC4C700
+[bluetooth]# scan le
+```
+The long number is the Bluetooth LE MIDI serive UUID. The scan will display the
+Bluetooth address of the MIDI device. If you omit that line, you will probably
+get a flood of Bluetooth addresses that are hard to figure out. I do not
+use `bluetoothctl` to connect to the device because I use it on my iPad, but
+`bluetoothctl` has commands to pair and connect. Whether your Linux kernel supports
+Bluetooth MIDI and makes it available is dependent on your Linux distribution.
+```
+[bluetooth]# scan stop
+[bluetooth]# pair [your device's Bluetooth address]
+[bluetooth]# connect [your device's Bluetooth address]
+[bluetooth]# exit
+```
+You can list the available MIDI playback and record devices with
+```
+aplaymidi -l
+arecordmidi -l
+```
+The `amidi -l` command will not show any devices.
+
+## Other operating systems
+If you use this project under Windows, Android, MacOS, or others, please submit
+a pull request to tell users how to get going with this software.
 
 # Troubleshooting
 If your project works for some USB MIDI devices and not others, one
